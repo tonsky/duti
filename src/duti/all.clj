@@ -4,6 +4,7 @@
     [duti.core :as core]
     [duti.error :as error]
     [duti.hashp :as hashp]
+    [duti.ml :as ml]
     [duti.reload :as reload]
     [duti.socket-repl :as socket-repl]
     [duti.test :as test]))

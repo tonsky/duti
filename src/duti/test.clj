@@ -34,10 +34,16 @@
           actual-str   (pr-str (:actual m))]
       (if (and
             (= '= (first (:expected m)))
-            (or
-              (> (count expected-str) 280)
-              (> (count actual-str) 280)))
-        (let [[_ [_ expected actual]] (:actual m)]
+            ; (or
+            ;   (> (count expected-str) 50)
+            ;   (> (count actual-str) 50))
+            )
+        (let [[_ [_ expected actual]] (:actual m)
+              expected-str (pr-str expected)
+              expr-str     (pr-str (nth (:expected m) 2))]
+          (println "    expr:" expr-str)
+          (println "expected:" expected-str)
+          (print   "  actual: ")
           (-> (ddiff/diff expected actual)
             ; (ddiff/minimize)
             (ddiff/pretty-print color-printer)))
@@ -74,11 +80,25 @@
   (test/with-test-out
     (println "Testing" (ns-name (:ns m)))))
 
+(defn run-all-tests [re]
+  (let [vars (for [ns    (all-ns)
+                   :when (re-matches re (name (ns-name ns)))
+                   var   (vals (ns-interns (the-ns ns)))
+                   :when (:test (meta var))
+                   :when (:only (meta var))]
+               var)]
+    (if (empty? vars)
+      (test/run-all-tests re)
+      (binding [test/*report-counters* (ref test/*initial-report-counters*)]
+        (test/test-vars vars)
+        (test/do-report (assoc @test/*report-counters* :type :summary))
+        @test/*report-counters*))))
+
 (defn test-throw
   ([]
    (test-throw #".*-test"))
   ([re]
-   (let [{:keys [fail error] :as res} (test/run-all-tests re)
+   (let [{:keys [fail error] :as res} (run-all-tests re)
          res (dissoc res :type)]
      (if (pos? (+ fail error))
        (throw (ex-info "Tests failed" res))
@@ -88,5 +108,5 @@
   ([]
    (test-exit #".*-test"))
   ([re]
-   (let [{:keys [fail error]} (test/run-all-tests re)]
+   (let [{:keys [fail error]} (run-all-tests re)]
      (System/exit (+ fail error)))))
