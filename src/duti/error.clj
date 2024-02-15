@@ -8,21 +8,6 @@
     [clojure.lang ExceptionInfo]
     [java.io Writer]))
 
-;; CompilerException has location info, but its cause RuntimeException has the message ¯\_(ツ)_/¯
-(defn root-cause [^Throwable t]
-  (loop [t t
-         data nil]
-    (if (and (nil? data) (instance? clojure.lang.Compiler$CompilerException t))
-      (recur t (ex-data t))
-      (if-some [cause (some-> t .getCause)]
-        (recur cause data)
-        (if data
-          (ExceptionInfo. "Wrapper to pass CompilerException ex-data" data t)
-          t)))))
-
-(defn print-root-trace [^Throwable t]
-  (stacktrace/print-stack-trace (root-cause t)))
-
 (defn duplicate? [^StackTraceElement prev-el ^StackTraceElement el]
   (and
     (= (.getClassName prev-el) (.getClassName el))
@@ -94,11 +79,10 @@
   (let [class (.getClassName el)]
     (#{"clojure.lang.RestFn" "clojure.lang.AFn"} class)))
 
-(defn trace-str [^Throwable t]
-  (let [{:clojure.error/keys [source line column]} (ex-data t)
-        cause (or (.getCause t) t)]
+(defn ^String trace-str [^Throwable t]
+  (let [{:clojure.error/keys [source line column]} (ex-data t)]
     (str
-      (->> (.getStackTrace cause)
+      (->> (.getStackTrace t)
         (take-while #(not (internal? %)))
         (remove noise?)
         (clear-duplicates)
@@ -106,13 +90,17 @@
         (reverse)
         (as-table))
       "\n"
-      (.getSimpleName (class cause))
+      (.getSimpleName (class t))
       ": "
-      (.getMessage cause)
+      (.getMessage t)
       (when (or source line column)
         (str " (" source ":" line ":" column ")"))
-      (when-some [data (ex-data cause)]
-        (str " " (pr-str data))))))
+      (when-some [data (ex-data t)]
+        (str " " (pr-str data)))
+      "\n")))
 
 (defmethod print-method Throwable [^Throwable t ^Writer w]
-  (.write w (trace-str t)))
+  (loop [t t]
+    (when t
+      (.write w (trace-str t))
+      (recur (.getCause t)))))
