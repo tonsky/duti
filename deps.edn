@@ -1,3 +1,2 @@
 {:deps
- {io.github.tonsky/tools.namespace {:git/sha "16d74dea5d7c211c34ea491107c91b9aa9105b3b"}
-  lambdaisland/deep-diff2 {:mvn/version "2.10.211"}}}
+ {lambdaisland/deep-diff2 {:mvn/version "2.10.211"}}}

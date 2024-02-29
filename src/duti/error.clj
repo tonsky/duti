@@ -3,7 +3,7 @@
     [clojure.java.io :as io]
     [clojure.stacktrace :as stacktrace]
     [clojure.string :as str]
-    [duti.core :as core])
+    [duti.common :as common])
   (:import
     [clojure.lang ExceptionInfo]
     [java.io Writer]))
@@ -32,7 +32,7 @@
         file (.getFileName el)]
     (some identity
       (for [base [path (butlast path)]
-            dir  core/dirs]
+            dir  common/dirs]
         (exists? (str dir "/" (str/join "/" base) "/" file))))))
 
 (defn trace-element [^StackTraceElement el]
