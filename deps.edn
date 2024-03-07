@@ -1,2 +1,2 @@
 {:deps
- {lambdaisland/deep-diff2 {:mvn/version "2.10.211"}}}
+ {lambdaisland/deep-diff2 {:mvn/version "2.11.216"}}}

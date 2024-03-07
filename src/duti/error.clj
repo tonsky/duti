@@ -63,7 +63,7 @@
                           (map #(get % col))
                           (map str)
                           (map count)
-                          (reduce max 0)))
+                          (reduce max 1)))
         format-str (str "\t%-" method "s\t%-" file "s\t:%d")]
     (->> table
       (map #(format format-str (:method %) (:file %) (:line %)))

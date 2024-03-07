@@ -1,4 +1,5 @@
 (ns duti.core
+  (:refer-clojure :exclude [test])
   (:require
     [duti.common :as common]
     [duti.error :as error]
@@ -11,6 +12,9 @@
 
 (def ^{:arities '([] [opts])} start-socket-repl
   socket-repl/start-socket-repl)
+
+(def ^{:arities '([] [re])} test
+  test/test)
 
 (def ^{:arities '([] [re])} test-throw
   test/test-throw)
