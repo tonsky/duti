@@ -1,6 +1,7 @@
 (ns duti.test
   (:refer-clojure :exclude [test])
   (:require
+    [clj-reload.core :as reload]
     [clojure.test :as test]
     [lambdaisland.deep-diff2 :as ddiff]))
 
@@ -85,8 +86,8 @@
   ([]
    (test #".*-test"))
   ([re]
-   (let [vars (for [ns    (all-ns)
-                    :when (re-matches re (name (ns-name ns)))
+   (reload/reload {:only re})
+   (let [vars (for [ns    (reload/find-namespaces re)
                     var   (vals (ns-interns (the-ns ns)))
                     :when (:test (meta var))
                     :when (:only (meta var))]

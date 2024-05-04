@@ -26,6 +26,11 @@
 (def ^{:arities '([] [opts])} start-socket-repl
   socket-repl/start-socket-repl)
 
+(defn -main [& args]
+  (alter-var-root #'*command-line-args* (constantly args))
+  (let [{port "--port"} args]
+    (socket-repl/start-socket-repl {:port (some-> port parse-long)})))
+
 (def ^{:arities '([] [re])} test
   test/test)
 
