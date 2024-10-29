@@ -1,15 +1,16 @@
 (ns duti.core
-  (:refer-clojure :exclude [test])
+  (:refer-clojure :exclude [test time])
   (:require
-    [clj-reload.core :as reload]
-    [duti.common :as common]
-    [duti.error :as error]
-    [duti.hashp :as hashp]
-    [duti.socket-repl :as socket-repl]
-    [duti.test :as test]))
+   [clj-reload.core :as reload]
+   [duti.common :as common]
+   [duti.error :as error]
+   [duti.hashp :as hashp]
+   [duti.profile :as profile]
+   [duti.socket-repl :as socket-repl]
+   [duti.test :as test]))
 
 (defn set-dirs [& dirs]
-  (alter-var-root #'common/dirs (constantly (vec dirs)))
+  (.bindRoot #'common/dirs (vec dirs))
   (reload/init
     {:dirs (vec dirs)
      :no-reload '#{user}}))
@@ -23,11 +24,47 @@
          cnt (count (:loaded res))]
      (str "Reloaded " cnt " namespace" (when (not= 1 cnt) "s")))))
 
+(defmacro profile
+  "Runs body once and outputs report to /tmp/clj-async-profiler/reports"
+  [& body]
+  (profile/profile body))
+
+(defmacro profile-times
+  "Runs body `i` times and outputs report to /tmp/clj-async-profiler/reports"
+  [i & body]
+  (profile/profile-times i body))
+
+(defmacro profile-for
+  "Runs body for `duration-ms` ms and outputs report to /tmp/clj-async-profiler/reports"
+  [duration-ms & body]
+  (profile/profile-for duration-ms body))
+
+(defmacro benching
+  "Like `testing`, but for bench"
+  [str & body]
+  (profile/benching str body))
+  
+(defmacro long-bench
+  "Runs body in a loop and prints median execution time"
+  [& body]
+  (profile/bench body))
+
+(defmacro bench
+  "Runs body in a loop and prints median execution time"
+  [& body]
+  (binding [criterium.core/*default-benchmark-opts* criterium.core/*default-quick-bench-opts*]
+    (profile/bench body)))
+
+(defmacro time
+  "Like `time` but with a message and nesting"
+  [msg & body]
+  (profile/time msg body))
+
 (def ^{:arities '([] [opts])} start-socket-repl
   socket-repl/start-socket-repl)
 
 (defn -main [& args]
-  (alter-var-root #'*command-line-args* (constantly args))
+  (.bindRoot #'*command-line-args* args)
   (let [{port "--port"} args]
     (socket-repl/start-socket-repl {:port (some-> port parse-long)})))
 

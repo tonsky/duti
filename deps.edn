@@ -1,3 +1,5 @@
 {:deps
- {io.github.tonsky/clj-reload {:mvn/version "0.7.0"}
-  lambdaisland/deep-diff2 {:mvn/version "2.11.216"}}}
+ {io.github.tonsky/clj-reload              {:mvn/version "0.7.1"}
+  lambdaisland/deep-diff2                  {:mvn/version "2.11.216"}
+  com.clojure-goes-fast/clj-async-profiler {:mvn/version "1.4.0"}
+  criterium/criterium                      {:mvn/version "0.4.6"}}}
