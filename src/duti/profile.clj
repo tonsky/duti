@@ -10,7 +10,7 @@
    [java.util Date]))
 
 (defn maybe-serve-ui []
-  (when (nil? @(requiring-resolve 'clj-async-profiler.ui/current-server))
+  (when (nil? @@(requiring-resolve 'clj-async-profiler.ui/current-server))
     (profiler/serve-ui 9999)))
 
 (defn profile [body]
@@ -23,17 +23,17 @@
          (println "Profiling finished" (str (profiler/stop)))))))
 
 (defn profile-times [i body]
-  `(profile
-     (dotimes [_# i]
-       ~@body)))
+  (profile
+    [`(dotimes [_# i]
+       ~@body)]))
 
 (defn profile-for [duration-ms body]
-  `(profile
-     (let [deadline# (+ (System/currentTimeMillis) ~duration-ms)]
+  (profile
+    [`(let [deadline# (+ (System/currentTimeMillis) ~duration-ms)]
        (loop []
          (when (< (System/currentTimeMillis) deadline#)
            ~@(if (seq body) body [(list 'java.lang.Thread/sleep duration-ms)])
-           (recur))))))
+           (recur))))]))
 
 (defn format-value [value]
   (let [[factor unit] (criterium/scale-time value)]
