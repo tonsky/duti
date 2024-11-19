@@ -3,6 +3,7 @@
   (:require
    [clj-memory-meter.core :as memory-meter]
    [clj-reload.core :as reload]
+   [clojure.string :as str]
    [duti.common :as common]
    [duti.error :as error]
    [duti.hashp :as hashp]
@@ -67,8 +68,12 @@
 
 (defmacro time
   "Like `time` but with a message and nesting"
-  [msg & body]
-  (profile/time msg body))
+  [& body]
+  (if (string? (first body))
+    (profile/time (first body) (next body))
+    (let [msg (str/join " " (map pr-str body))
+          msg (if (> (count msg) 60) (str (subs msg 0 57) "...") msg)]
+      (profile/time msg body))))
 
 (def ^{:arities '([] [opts])} start-socket-repl
   socket-repl/start-socket-repl)

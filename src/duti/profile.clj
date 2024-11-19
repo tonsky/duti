@@ -6,6 +6,8 @@
    [clojure.string :as str]
    [criterium.core :as criterium])
   (:import
+   [com.sun.management ThreadMXBean]
+   [java.lang.management ManagementFactory]
    [java.text SimpleDateFormat]
    [java.util Date]))
 
@@ -53,15 +55,26 @@
   (let [name (str/join " " body)
         name (if (< (count name) 100) name (str (subs name 0 100) "..."))]
     `(let [_#      (println (str *indent* "Benchmarking " (str/join " → " (conj *bench-stack* ~name))))
+           bean#  ^ThreadMXBean (ManagementFactory/getThreadMXBean)
+           bytes# (.getCurrentThreadAllocatedBytes bean#)
            res#    (criterium/benchmark* (fn [] ~@body) ~opts)
            mean#   (format-value (first (:mean res#)))
            stddev# (format-value (Math/sqrt (first (:variance res#))))
-           calls#  (:execution-count res#)]
-       (println (str *indent* "└╴Mean time: " mean# ", stddev: " stddev# ", calls: " calls#)))))
+           calls#  (:execution-count res#)
+           bytes#  (- (.getCurrentThreadAllocatedBytes bean#) bytes#)
+           alloc#  (/ bytes# (+ (:execution-count res#) (:warmup-executions res#)))]
+       (println (str *indent* "└╴Mean time: " mean# ", alloc: " (format "%.2f" (/ alloc# 1024.0)) " KB, stddev: " stddev# ", calls: " calls#)))))
 
-(defn time [msg & body]
-  `(let [start# (System/nanoTime)
+(defn time [msg body]
+  `(let [bean#  ^ThreadMXBean (ManagementFactory/getThreadMXBean)
+         bytes# (.getCurrentThreadAllocatedBytes bean#)
+         start# (System/nanoTime)
          res#   (binding [*indent* (str "  " *indent*)]
-                  ~@body)]
-     (println (str *indent* ~msg) "took" (-> (System/nanoTime) (- start#) (/ 1000000) long) "ms")
+                  ~@body)
+         bytes# (- (.getCurrentThreadAllocatedBytes bean#) bytes#)]
+     (println (format "%s% 3d ms % 3.2f KB for %s"
+                *indent* 
+                (-> (System/nanoTime) (- start#) (/ 1000000) long)
+                (-> bytes# (/ 1024.0))
+                ~msg))
      res#))
