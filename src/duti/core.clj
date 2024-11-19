@@ -47,13 +47,12 @@
 (defmacro long-bench
   "Runs body in a loop and prints median execution time"
   [& body]
-  (profile/bench body))
+  (profile/bench criterium.core/*default-benchmark-opts* body))
 
 (defmacro bench
   "Runs body in a loop and prints median execution time"
   [& body]
-  (binding [criterium.core/*default-benchmark-opts* criterium.core/*default-quick-bench-opts*]
-    (profile/bench body)))
+  (profile/bench criterium.core/*default-quick-bench-opts* body))
 
 (defmacro time
   "Like `time` but with a message and nesting"

@@ -49,11 +49,11 @@
   `(binding [*bench-stack* (conj *bench-stack* ~str)]
      ~@body))
 
-(defn bench [body]
+(defn bench [opts body]
   (let [name (str/join " " body)
         name (if (< (count name) 100) name (str (subs name 0 100) "..."))]
     `(let [_#      (println (str *indent* "Benchmarking " (str/join " → " (conj *bench-stack* ~name))))
-           res#    (criterium/benchmark* (fn [] ~@body) {})
+           res#    (criterium/benchmark* (fn [] ~@body) ~opts)
            mean#   (format-value (first (:mean res#)))
            stddev# (format-value (Math/sqrt (first (:variance res#))))
            calls#  (:execution-count res#)]
