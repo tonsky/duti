@@ -29,17 +29,26 @@
 (defmacro profile
   "Runs body once and outputs report to /tmp/clj-async-profiler/reports"
   [& body]
-  (profile/profile body))
+  (let [[opts body] (if (map? (first body))
+                      [(first body) (next body)]
+                      [{} body])]
+    (profile/profile opts body)))
 
 (defmacro profile-times
   "Runs body `i` times and outputs report to /tmp/clj-async-profiler/reports"
   [i & body]
-  (profile/profile-times i body))
+  (let [[opts body] (if (map? (first body))
+                      [(first body) (next body)]
+                      [{} body])]
+    (profile/profile-times i opts body)))
 
 (defmacro profile-for
   "Runs body for `duration-ms` ms and outputs report to /tmp/clj-async-profiler/reports"
   [duration-ms & body]
-  (profile/profile-for duration-ms body))
+  (let [[opts body] (if (map? (first body))
+                      [(first body) (next body)]
+                      [{} body])]
+    (profile/profile-for duration-ms opts body)))
 
 (defmacro benching
   "Like `testing`, but for bench"

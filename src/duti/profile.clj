@@ -15,22 +15,22 @@
   (when (nil? @@(requiring-resolve 'clj-async-profiler.ui/current-server))
     (profiler/serve-ui 9999)))
 
-(defn profile [body]
+(defn profile [opts body]
   `(do
      (maybe-serve-ui)
-     (profiler/start)
+     (profiler/start ~opts)
      (try
        ~@body
        (finally
          (println "Profiling finished" (str (profiler/stop)))))))
 
-(defn profile-times [i body]
-  (profile
+(defn profile-times [i opts body]
+  (profile opts
     [`(dotimes [_# i]
        ~@body)]))
 
-(defn profile-for [duration-ms body]
-  (profile
+(defn profile-for [duration-ms opts body]
+  (profile opts
     [`(let [deadline# (+ (System/currentTimeMillis) ~duration-ms)]
        (loop []
          (when (< (System/currentTimeMillis) deadline#)
