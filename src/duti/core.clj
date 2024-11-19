@@ -1,6 +1,7 @@
 (ns duti.core
   (:refer-clojure :exclude [test time])
   (:require
+   [clj-memory-meter.core :as memory-meter]
    [clj-reload.core :as reload]
    [duti.common :as common]
    [duti.error :as error]
@@ -53,6 +54,16 @@
   "Runs body in a loop and prints median execution time"
   [& body]
   (profile/bench criterium.core/*default-quick-bench-opts* body))
+
+(defn memory
+  "Measures how much memory an object occupies"
+  [obj]
+  (memory-meter/measure obj))
+
+(defn memory-layout
+  "Prints object layout in memory"
+  [obj]
+  (memory-meter/measure obj :debug true))
 
 (defmacro time
   "Like `time` but with a message and nesting"
