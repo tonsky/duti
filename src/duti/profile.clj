@@ -15,6 +15,8 @@
   (when (nil? @@(requiring-resolve 'clj-async-profiler.ui/current-server))
     (profiler/serve-ui 9999)))
 
+(profiler/set-default-profiling-options {:config {:sort-by :name}})
+
 (defn profile [opts body]
   `(do
      (maybe-serve-ui)
