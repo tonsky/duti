@@ -28,7 +28,7 @@
 
 (defn profile-times [i opts body]
   (profile opts
-    [`(dotimes [_# i]
+    [`(dotimes [_# ~i]
        ~@body)]))
 
 (defn profile-for [duration-ms opts body]
