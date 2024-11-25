@@ -65,7 +65,8 @@
            calls#  (:execution-count res#)
            bytes#  (- (.getCurrentThreadAllocatedBytes bean#) bytes#)
            alloc#  (/ bytes# (+ (:execution-count res#) (:warmup-executions res#)))]
-       (println (str *indent* "└╴Mean time: " mean# ", alloc: " (format "%.2f" (/ alloc# 1024.0)) " KB, stddev: " stddev# ", calls: " calls#)))))
+       (println (str *indent* "└╴Mean time: " mean# ", alloc: " (format "%.2f" (/ alloc# 1024.0)) " KB, stddev: " stddev# ", calls: " calls#))
+       mean#)))
 
 (defn time [msg body]
   `(let [bean#  ^ThreadMXBean (ManagementFactory/getThreadMXBean)
