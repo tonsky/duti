@@ -39,9 +39,16 @@
            ~@(if (seq body) body [(list 'java.lang.Thread/sleep duration-ms)])
            (recur))))]))
 
-(defn format-value [value]
-  (let [[factor unit] (criterium/scale-time value)]
-    (criterium/format-value value factor unit)))
+(defn format-value [{:keys [unit format]
+                     :or {format "%.3f"}}
+                    value]
+  (case unit
+    "ns"   (clojure.core/format (str format " ns") (* value 1e9))
+    "μs"   (clojure.core/format (str format " μs") (* value 1e6))
+    "ms"   (clojure.core/format (str format " ms") (* value 1e3))
+    "s"    (clojure.core/format (str format " s")  value)
+    #_else (let [[factor unit] (criterium/scale-time value)]
+             (criterium/format-value value factor unit))))
 
 (def ^:dynamic *indent*
   "")
@@ -57,11 +64,12 @@
   (let [name (str/join " " body)
         name (if (< (count name) 100) name (str (subs name 0 100) "..."))]
     `(let [_#      (println (str *indent* "Benchmarking " (str/join " → " (conj *bench-stack* ~name))))
-           bean#  ^ThreadMXBean (ManagementFactory/getThreadMXBean)
-           bytes# (.getCurrentThreadAllocatedBytes bean#)
-           res#    (criterium/benchmark* (fn [] ~@body) ~opts)
-           mean#   (format-value (first (:mean res#)))
-           stddev# (format-value (Math/sqrt (first (:variance res#))))
+           opts#   ~opts
+           bean#   ^ThreadMXBean (ManagementFactory/getThreadMXBean)
+           bytes#  (.getCurrentThreadAllocatedBytes bean#)
+           res#    (criterium/benchmark* (fn [] ~@body) opts#)
+           mean#   (format-value opts# (first (:mean res#)))
+           stddev# (format-value opts# (Math/sqrt (first (:variance res#))))
            calls#  (:execution-count res#)
            bytes#  (- (.getCurrentThreadAllocatedBytes bean#) bytes#)
            alloc#  (/ bytes# (+ (:execution-count res#) (:warmup-executions res#)))]

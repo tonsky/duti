@@ -58,12 +58,18 @@
 (defmacro long-bench
   "Runs body in a loop and prints median execution time"
   [& body]
-  (profile/bench criterium.core/*default-benchmark-opts* body))
+  (let [[opts body] (if (map? (first body))
+                      [(first body) (next body)]
+                      [nil body])]
+    (profile/bench (merge criterium.core/*default-benchmark-opts* opts) body)))
 
 (defmacro bench
   "Runs body in a loop and prints median execution time"
   [& body]
-  (profile/bench criterium.core/*default-quick-bench-opts* body))
+  (let [[opts body] (if (map? (first body))
+                      [(first body) (next body)]
+                      [nil body])]
+    (profile/bench (merge criterium.core/*default-quick-bench-opts* opts) body)))
 
 (defn memory
   "Measures how much memory an object occupies"
